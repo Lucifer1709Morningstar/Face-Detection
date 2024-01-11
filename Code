@@ -1,0 +1,42 @@
+import cv2
+
+# FACE DETECTION
+face_capture = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml") #file for facial detection
+video_capture = cv2.VideoCapture(0)  # Enable camera from cv2 library
+
+while True:
+    ret, video_data = video_capture.read()  # Default variable to capture the video
+    color = cv2.cvtColor(video_data, cv2.COLOR_BGR2GRAY)  # Convert color image to gray
+    
+    # Change face structure
+    faces = face_capture.detectMultiScale(
+        color,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30),
+        flags=cv2.CASCADE_SCALE_IMAGE
+    )
+
+    # Where our box will appear
+    for (x, y, w, h) in faces:
+        cv2.rectangle(video_data, (x, y), (x+w, y+h), (0, 255, 0), 2)  # For color and distance
+
+    # Check if the video frame is valid
+    if not ret:
+        print("Error: Failed to capture video frame")
+        break
+
+    cv2.imshow("Face_Detector", video_data)  # To show the video
+
+    # Wait for a key event (waitKey is used to make it wait for a particular time period)
+    key = cv2.waitKey(10)
+
+    # Check if the 'a' key is pressed to exit the loop
+    if key == ord("a"):
+        break
+
+# Release the video capture object
+video_capture.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
