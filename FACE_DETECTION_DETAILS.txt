@@ -1,0 +1,118 @@
+OLD CODE:
+import cv2
+video_capture= cv2.VideoCapture(0)
+while True:
+    ret, video_data = video_capture.read()  
+    cv2.imshow("video_live",video_data)  
+    if cv2.waitKey(10) == ord("a"): 
+        break
+    video_capture.release()
+
+ERROR SHOWN:
+ File "c:\vs code\Project\face_detection_opency.py", line 5, in 
+<module>
+    cv2.imshow("video_live",video_data)  #to show the video      
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cv2.error: OpenCV(4.7.0) D:\a\opencv-python\opencv-python\opencv\modules\highgui\src\window.cpp:971: error: (-215:Assertion failed) size.width>0 && size.height>0 in function 'cv::imshow'
+
+MEANING:
+It seems like you are encountering the same error while trying to capture video from your camera and display it using cv2.imshow. The issue might be related to the fact that the video frame is not being captured successfully, leading to an empty or invalid frame being passed to cv2.imshow.
+
+UPDATED CODE:
+import cv2
+
+video_capture = cv2.VideoCapture(0)  # Enable camera from cv2 library
+
+while True:
+    ret, video_data = video_capture.read()  # Default variable to capture the video
+    
+    # Check if the video frame is valid
+    if not ret:
+        print("Error: Failed to capture video frame")
+        break
+
+    cv2.imshow("video_live", video_data)  # To show the video
+
+    # Wait for a key event (waitKey is used to make it wait for a particular time period)
+    key = cv2.waitKey(10)
+
+    # Check if the 'a' key is pressed to exit the loop
+    if key == ord("a"):
+        break
+
+# Release the video capture object
+video_capture.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
+
+CHANGES MADE:
+Added a check (if not ret:) to ensure that the video frame is captured successfully. If ret is False, it means there was an issue capturing the frame.
+
+Moved video_capture.release() outside the loop. It's necessary to release the video capture object after the loop ends, not inside the loop.
+
+Used cv2.waitKey(10) to store the key event in a variable (key). This way, you can check for specific key events.
+
+ANOTHER ERROR OCCURED:
+
+The error you are encountering, cv2.error: OpenCV(4.7.0) ... error: (-215:Assertion failed) !empty() in function 'cv::CascadeClassifier::detectMultiScale', suggests that the CascadeClassifier object is not loaded properly. This could be due to an issue with the path to the XML file for the Haar cascade.
+
+THERE ARE FOLLOWING APPROACHES TO SOLVE IT:
+
+1.Check the Haar Cascade XML file path:
+Double-check the path to the Haar cascade XML file (haarcascade_frontalface_default.xml). Ensure that the file exists at the specified path:
+face_capture = cv2.CascadeClassifier("C:/Users/User/AppData/Local/Programs/Python/Python311/Lib/site-packages/cv2/data/haarcascade_frontalface_default.xml")
+
+2.Use a relative path:
+Instead of using an absolute path, you can use a relative path to the Haar cascade XML file. Place the XML file in the same directory as your Python script and use:
+face_capture = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+3.Load the Haar cascade file using cv2.data module:
+OpenCV provides a cv2.data module that can be used to locate the default data files. Try using this module to load the Haar cascade file:
+face_capture = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+
+HENCE THE FINAL CODE OF FACIAL RECOGNITION IS:
+
+import cv2
+
+# FACE DETECTION
+face_capture = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+video_capture = cv2.VideoCapture(0)  # Enable camera from cv2 library
+
+while True:
+    ret, video_data = video_capture.read()  # Default variable to capture the video
+    color = cv2.cvtColor(video_data, cv2.COLOR_BGR2GRAY)  # Convert color image to gray
+    
+    # Change face structure
+    faces = face_capture.detectMultiScale(
+        color,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30),
+        flags=cv2.CASCADE_SCALE_IMAGE
+    )
+
+    # Where our box will appear
+    for (x, y, w, h) in faces:
+        cv2.rectangle(video_data, (x, y), (x+w, y+h), (0, 255, 0), 2)  # For color and distance
+
+    # Check if the video frame is valid
+    if not ret:
+        print("Error: Failed to capture video frame")
+        break
+
+    cv2.imshow("Face_Detector", video_data)  # To show the video
+
+    # Wait for a key event (waitKey is used to make it wait for a particular time period)
+    key = cv2.waitKey(10)
+
+    # Check if the 'a' key is pressed to exit the loop
+    if key == ord("a"):
+        break
+
+# Release the video capture object
+video_capture.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
